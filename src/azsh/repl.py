@@ -11,7 +11,7 @@ from rich.panel import Panel
 
 from copilot.generated.session_events import SessionEventType
 
-from azsh.agent import cleanup, create_agent, detect_cloud_shell
+from azsh.agent import cleanup, create_agent
 from azsh.commands import handle_command
 from azsh.mentions import resolve_mentions
 
@@ -19,7 +19,6 @@ console = Console()
 
 SLASH_COMMANDS = {
     "/sub": "Show/switch Azure subscription",
-    "/env": "Show environment info, user, and available tools",
     "/help": "Show available commands and @ mentions",
     "/clear": "Clear the screen",
     "/exit": "Exit azsh",
@@ -85,8 +84,6 @@ async def run_repl():
     ╰──────────────────────────────────────────╯{RESET}
     """)
 
-    env = "Cloud Shell" if detect_cloud_shell() else "Local"
-    console.print(f"[dim]Environment: {env}[/dim]")
     console.print("[dim]Type /help for commands, @ to mention Azure resources[/dim]\n")
 
     try:

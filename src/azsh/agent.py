@@ -70,7 +70,7 @@ async def create_agent():
     await client.start()
 
     is_cloud_shell = detect_cloud_shell()
-    system_prompt = get_system_prompt(is_cloud_shell)
+    system_prompt = get_system_prompt()
 
     session = await client.create_session(
         {

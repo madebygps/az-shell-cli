@@ -25,7 +25,6 @@ async def handle_command(command: str) -> str | None:
 
     handlers = {
         "/sub": _handle_sub,
-        "/env": _handle_env,
         "/help": _handle_help,
         "/clear": _handle_clear,
         "/exit": _handle_exit,
@@ -129,7 +128,6 @@ async def _handle_help(_arg: str | None) -> str:
     cmd_table.add_column("Command", style="cyan")
     cmd_table.add_column("Description")
     cmd_table.add_row("/sub [name]", "List subscriptions or switch to one")
-    cmd_table.add_row("/env", "Show environment info, user, and available tools")
     cmd_table.add_row("/help", "Show this help message")
     cmd_table.add_row("/clear", "Clear the screen")
     cmd_table.add_row("/exit", "Exit the shell")
