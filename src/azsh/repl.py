@@ -115,9 +115,14 @@ async def run_repl():
 
         while True:
             try:
-                user_input = (await prompt_session.prompt_async(
-                    HTML("<cyan><b>azsh&gt;</b></cyan> "),
-                )).strip()
+                active_rg = get_active_rg()
+                if active_rg:
+                    prompt_text = HTML(
+                        f"<cyan><b>azsh</b></cyan> <ansiblue>[{active_rg}]</ansiblue><cyan><b>&gt;</b></cyan> "
+                    )
+                else:
+                    prompt_text = HTML("<cyan><b>azsh&gt;</b></cyan> ")
+                user_input = (await prompt_session.prompt_async(prompt_text)).strip()
             except (KeyboardInterrupt, EOFError):
                 console.print("\n[dim]Goodbye![/dim]")
                 break

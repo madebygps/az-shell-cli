@@ -9,7 +9,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 
-from azsh.resource_cache import get_active_rg, set_active_rg
+from azsh.resource_cache import get_active_rg, get_cached_resources, set_active_rg
 from rich.markdown import Markdown
 
 console = Console()
@@ -102,8 +102,18 @@ async def _handle_rg(arg: str | None) -> str:
     """List resource groups or set the active one."""
     if arg:
         await set_active_rg(arg)
-        console.print(f"[green]✓ Active resource group:[/green] {arg}")
-        console.print("[dim]  ↳ Loading resources in background...[/dim]")
+        console.print(f"[green]✓ Active resource group:[/green] [cyan]{arg}[/cyan]")
+        # Wait for resources to load so we can show the count
+        for _ in range(30):
+            await asyncio.sleep(0.5)
+            resources = get_cached_resources()
+            if resources:
+                break
+        resources = get_cached_resources()
+        if resources:
+            console.print(f"[dim]  ↳ {len(resources)} resource(s) loaded, use @ to mention them[/dim]")
+        else:
+            console.print("[dim]  ↳ Loading resources...[/dim]")
         return "handled"
 
     # List resource groups

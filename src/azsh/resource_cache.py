@@ -52,8 +52,6 @@ async def set_active_rg(rg_name: str) -> None:
     async def _do_fetch():
         global _cached_resources
         _cached_resources = await _fetch_resources(rg_name)
-        count = len(_cached_resources)
-        console.print(f"[dim]  ↳ {count} resource(s) loaded, use @ to mention them[/dim]")
 
     _fetch_task = asyncio.create_task(_do_fetch())
 
