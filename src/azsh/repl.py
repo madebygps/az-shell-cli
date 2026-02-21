@@ -72,7 +72,12 @@ async def run_repl():
 
             resolved_text = await resolve_mentions(user_input)
 
-            await session.send_and_wait({"prompt": resolved_text})
+            try:
+                await session.send_and_wait({"prompt": resolved_text, "timeout": 300})
+            except asyncio.TimeoutError:
+                console.print("\n[yellow]⚠ Response timed out. The agent may still be working — try a simpler request.[/yellow]")
+            except Exception as e:
+                console.print(f"\n[red]Error: {e}[/red]")
             print()
     except KeyboardInterrupt:
         console.print("\n[dim]Goodbye![/dim]")
