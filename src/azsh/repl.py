@@ -136,6 +136,15 @@ async def run_repl():
 
             resolved_text = await resolve_mentions(user_input)
 
+            # Prepend active resource group context if set
+            active_rg = get_active_rg()
+            if active_rg:
+                resolved_text = (
+                    f"[Active Resource Group: {active_rg}]\n"
+                    f"When I say 'this resource group' I mean '{active_rg}'.\n\n"
+                    f"{resolved_text}"
+                )
+
             console.print("[dim]⏳ Thinking...[/dim]")
             response_buffer.clear()
             try:
