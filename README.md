@@ -52,13 +52,14 @@ Copilot CLI is great for local dev — but Azure Cloud Shell users have a differ
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
-uv pip install -e .
+source ~/.local/bin/env
+uv sync
 ```
 
 ### Run
 
 ```bash
-azsh
+uv run azsh
 ```
 
 ### In Azure Cloud Shell
@@ -66,6 +67,7 @@ azsh
 ```bash
 # Install uv (fast Python package manager)
 curl -LsSf https://astral.sh/uv/install.sh | sh
+source ~/.local/bin/env
 
 # Install Copilot CLI
 curl -fsSL https://gh.io/copilot-install | bash
@@ -73,13 +75,13 @@ curl -fsSL https://gh.io/copilot-install | bash
 # Clone and install
 git clone https://github.com/madebygps/az-shell-cli.git
 cd az-shell-cli
-uv pip install --user -e .
+uv sync
 
 # Auth with GitHub (first time only)
 copilot        # then type /login
 
 # Run — Cloud Shell is auto-detected!
-azsh
+uv run azsh
 ```
 
 ## 💡 Example Usage
