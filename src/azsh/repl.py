@@ -7,7 +7,7 @@ from prompt_toolkit import PromptSession
 from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.formatted_text import HTML
 from rich.console import Console
-from rich.panel import Panel
+from rich.markdown import Markdown
 
 from copilot.generated.session_events import SessionEventType
 
@@ -61,28 +61,15 @@ class AzshCompleter(Completer):
 
 async def run_repl():
     """Run the interactive azsh REPL."""
-    # Azure-inspired ASCII banner — use plain ANSI since Rich markup can't nest well here
-    BLUE = "\033[38;5;33m"
-    CYAN = "\033[38;5;44m"
-    WHITE = "\033[1;37m"
-    DIM = "\033[2m"
-    RESET = "\033[0m"
-
-    print(f"""{CYAN}
-    ╭──────────────────────────────────────────╮
-    │                                          │
-    │   {BLUE}█████╗ ███████╗███████╗██╗  ██╗{CYAN}       │
-    │   {BLUE}██╔══██╗╚══███╔╝██╔════╝██║  ██║{CYAN}       │
-    │   {BLUE}███████║  ███╔╝ ███████╗███████║{CYAN}       │
-    │   {BLUE}██╔══██║ ███╔╝  ╚════██║██╔══██║{CYAN}       │
-    │   {BLUE}██║  ██║███████╗███████║██║  ██║{CYAN}       │
-    │   {DIM}╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝{CYAN}       │
-    │                                          │
-    │   {WHITE}Azure Cloud Shell + AI{CYAN}     {DIM}v0.1.0{CYAN}   │
-    │   {DIM}Powered by GitHub Copilot SDK{CYAN}          │
-    │                                          │
-    ╰──────────────────────────────────────────╯{RESET}
-    """)
+    # Banner using Rich for reliable rendering
+    console.print()
+    console.print("[bold blue]  ╔═╗╔═══╗╔═══╗╦  ╦[/bold blue]")
+    console.print("[bold blue]  ╠═╣  ╔═╝╚══╗║╠══╣[/bold blue]")
+    console.print("[bold blue]  ╩ ╩╚═══╝╚═══╝╩  ╩[/bold blue]")
+    console.print()
+    console.print("[bold white]  Azure Cloud Shell + AI[/bold white]  [dim]v0.1.0[/dim]")
+    console.print("[dim]  Powered by GitHub Copilot SDK[/dim]")
+    console.print()
 
     console.print("[dim]Type /help for commands, @ to mention Azure resources[/dim]\n")
 
@@ -103,13 +90,15 @@ async def run_repl():
     )
 
     try:
+        response_buffer = []
+
         def handle_event(event):
             if event.type == SessionEventType.ASSISTANT_MESSAGE_DELTA:
                 delta = event.data.delta_content or ""
-                sys.stdout.write(delta)
+                response_buffer.append(delta)
+                # Show a dot for progress while streaming
+                sys.stdout.write(".")
                 sys.stdout.flush()
-            elif event.type == SessionEventType.SESSION_IDLE:
-                print()
 
         session.on(handle_event)
 
@@ -137,12 +126,21 @@ async def run_repl():
             resolved_text = await resolve_mentions(user_input)
 
             console.print("[dim]⏳ Thinking...[/dim]")
+            response_buffer.clear()
             try:
                 await session.send_and_wait({"prompt": resolved_text, "timeout": 300})
             except asyncio.TimeoutError:
-                console.print("\n[yellow]⚠ Response timed out. The agent may still be working — try a simpler request.[/yellow]")
+                console.print("\n[yellow]⚠ Response timed out.[/yellow]")
             except Exception as e:
                 console.print(f"\n[red]Error: {e}[/red]")
+
+            # Render the collected response as markdown
+            if response_buffer:
+                full_response = "".join(response_buffer)
+                # Clear the progress dots
+                sys.stdout.write("\r\033[K")
+                sys.stdout.flush()
+                console.print(Markdown(full_response))
             print()
     except KeyboardInterrupt:
         console.print("\n[dim]Goodbye![/dim]")
