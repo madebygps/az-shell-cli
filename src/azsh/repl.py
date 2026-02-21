@@ -14,22 +14,21 @@ from copilot.generated.session_events import SessionEventType
 from azsh.agent import cleanup, create_agent
 from azsh.commands import handle_command
 from azsh.mentions import resolve_mentions
+from azsh.resource_cache import get_active_rg, get_resource_completions
 
 console = Console()
 
 SLASH_COMMANDS = {
     "/sub": "Show/switch Azure subscription",
+    "/rg": "Set working resource group",
     "/help": "Show available commands and @ mentions",
     "/clear": "Clear the screen",
     "/exit": "Exit azsh",
     "/quit": "Exit azsh",
 }
 
-AT_MENTIONS = {
+STATIC_MENTIONS = {
     "@sub": "Current subscription context",
-    "@rg:": "Resource group — @rg:<name>",
-    "@vm:": "Virtual machine — @vm:<name>",
-    "@aks:": "AKS cluster — @aks:<name>",
     "@file:": "File contents — @file:<path>",
 }
 
@@ -46,17 +45,29 @@ class AzshCompleter(Completer):
                     yield Completion(cmd, start_position=-len(text), display_meta=desc)
 
         # Complete @ mentions at any position
-        # Find the last @ in the text
         at_pos = text.rfind("@")
         if at_pos >= 0:
             at_text = text[at_pos:]
-            for mention, desc in AT_MENTIONS.items():
+
+            # Static mentions
+            for mention, desc in STATIC_MENTIONS.items():
                 if mention.startswith(at_text):
                     yield Completion(
                         mention,
                         start_position=-len(at_text),
                         display_meta=desc,
                     )
+
+            # Dynamic resources from active RG
+            rg = get_active_rg()
+            if rg:
+                for mention, desc in get_resource_completions():
+                    if mention.startswith(at_text):
+                        yield Completion(
+                            mention,
+                            start_position=-len(at_text),
+                            display_meta=desc,
+                        )
 
 
 async def run_repl():

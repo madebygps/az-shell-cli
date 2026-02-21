@@ -62,5 +62,9 @@ def get_system_prompt() -> str:
         "(/subscriptions/{id}/resourceGroups/{name}).\n\n"
         "Available tools:\n"
         "- `run_command`: Execute shell commands on behalf of the user.\n"
-        "- `get_azure_context`: Check the current Azure identity and subscription."
+        "- `get_azure_context`: Check the current Azure identity and subscription.\n\n"
+        "Working resource group:\n"
+        "- The user can set an active resource group with /rg <name>.\n"
+        "- When set, default --resource-group to the active RG unless the user specifies otherwise.\n"
+        "- The user can @ mention specific resources from their active RG."
     )

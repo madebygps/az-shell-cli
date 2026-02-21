@@ -8,6 +8,8 @@ import shutil
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
+
+from azsh.resource_cache import get_active_rg, set_active_rg
 from rich.markdown import Markdown
 
 console = Console()
@@ -25,6 +27,7 @@ async def handle_command(command: str) -> str | None:
 
     handlers = {
         "/sub": _handle_sub,
+        "/rg": _handle_rg,
         "/help": _handle_help,
         "/clear": _handle_clear,
         "/exit": _handle_exit,
@@ -95,6 +98,41 @@ async def _handle_sub(arg: str | None) -> str:
     return "handled"
 
 
+async def _handle_rg(arg: str | None) -> str:
+    """List resource groups or set the active one."""
+    if arg:
+        await set_active_rg(arg)
+        console.print(f"[green]✓ Active resource group:[/green] {arg}")
+        console.print("[dim]  ↳ Loading resources in background...[/dim]")
+        return "handled"
+
+    # List resource groups
+    data = await asyncio.to_thread(_run_az, "group list")
+    if not data:
+        console.print("[red]Failed to list resource groups.[/red]")
+        return "handled"
+
+    active = get_active_rg()
+    table = Table(title="Resource Groups")
+    table.add_column("Name", style="cyan")
+    table.add_column("Location", style="dim")
+    table.add_column("Active", justify="center")
+
+    for rg in data:
+        name = rg.get("name", "")
+        location = rg.get("location", "")
+        is_active = "✓" if name == active else ""
+        table.add_row(
+            name,
+            location,
+            f"[green]{is_active}[/green]" if is_active else "",
+        )
+
+    console.print(table)
+    console.print("[dim]Use /rg <name> to set your working resource group[/dim]")
+    return "handled"
+
+
 async def _handle_env(_arg: str | None) -> str:
     """Show current environment information."""
     is_cloud_shell = bool(os.environ.get("CLOUD_SHELL_ID") or os.environ.get("ACC_CLOUD"))
@@ -128,6 +166,7 @@ async def _handle_help(_arg: str | None) -> str:
     cmd_table.add_column("Command", style="cyan")
     cmd_table.add_column("Description")
     cmd_table.add_row("/sub [name]", "List subscriptions or switch to one")
+    cmd_table.add_row("/rg [name]", "List resource groups or set your working RG")
     cmd_table.add_row("/help", "Show this help message")
     cmd_table.add_row("/clear", "Clear the screen")
     cmd_table.add_row("/exit", "Exit the shell")
