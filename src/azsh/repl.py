@@ -162,10 +162,10 @@ async def run_repl():
             # Render the collected response as markdown
             if response_buffer:
                 full_response = "".join(response_buffer)
-                # Clear the progress dots
                 sys.stdout.write("\r\033[K")
                 sys.stdout.flush()
-                console.print(Markdown(full_response))
+                console.print()
+                console.print(Markdown(full_response), style="bright_white")
             print()
     except KeyboardInterrupt:
         console.print("\n[dim]Goodbye![/dim]")
