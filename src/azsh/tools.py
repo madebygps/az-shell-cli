@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import os
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -54,6 +55,25 @@ async def run_command(params: RunCommandParams) -> str:
     )
 )
 async def get_azure_context(params: GetAzureContextParams) -> str:
+    # Try Cloud Shell env vars first (instant, no subprocess)
+    sub_id = os.environ.get("ACC_USER_SUBSCRIPTION")
+    if sub_id:
+        tenant_id = os.environ.get("ACC_TID", "N/A")
+        location = os.environ.get("ACC_LOCATION", "N/A")
+        user = os.environ.get("USER", "N/A")
+        session_type = os.environ.get("ACC_SESSION_TYPE", "N/A")
+        idle_limit = os.environ.get("ACC_IDLE_TIME_LIMIT", "N/A")
+        return (
+            f"Subscription ID: {sub_id}\n"
+            f"Tenant ID: {tenant_id}\n"
+            f"Region: {location}\n"
+            f"User: {user}\n"
+            f"Session Type: {session_type}\n"
+            f"Idle Timeout: {idle_limit} minutes\n"
+            f"Cloud: Azure (PROD)"
+        )
+
+    # Fallback to az CLI
     try:
         process = await asyncio.create_subprocess_shell(
             "az account show --output json",

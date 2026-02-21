@@ -27,6 +27,20 @@ def _run_az(args: list[str]) -> dict | list | str:
 def _resolve_sub(match: re.Match) -> tuple[str, str]:
     """Resolve @sub — show current subscription context."""
     console.print("[dim]⟳ Resolving @sub...[/dim]")
+    # Try Cloud Shell env vars first (instant)
+    sub_id = os.environ.get("ACC_USER_SUBSCRIPTION")
+    if sub_id:
+        tenant_id = os.environ.get("ACC_TID", "unknown")
+        location = os.environ.get("ACC_LOCATION", "unknown")
+        user = os.environ.get("USER", "unknown")
+        session_type = os.environ.get("ACC_SESSION_TYPE", "unknown")
+        context = (
+            f"[Azure Context: Current Subscription]\n"
+            f"Subscription ID: {sub_id}, Tenant: {tenant_id}, "
+            f"Region: {location}, User: {user}, Session: {session_type}"
+        )
+        return context, "the current subscription"
+    # Fallback to az CLI
     try:
         info = _run_az(["account", "show"])
         name = info.get("name", "unknown")
