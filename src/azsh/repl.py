@@ -62,22 +62,28 @@ class AzshCompleter(Completer):
 
 async def run_repl():
     """Run the interactive azsh REPL."""
-    # Azure-inspired ASCII banner
-    banner = """[bold cyan]
+    # Azure-inspired ASCII banner — use plain ANSI since Rich markup can't nest well here
+    BLUE = "\033[38;5;33m"
+    CYAN = "\033[38;5;44m"
+    WHITE = "\033[1;37m"
+    DIM = "\033[2m"
+    RESET = "\033[0m"
+
+    print(f"""{CYAN}
     ╭──────────────────────────────────────────╮
     │                                          │
-    │   [blue]█████[/blue][cyan]╗ [/cyan][blue]███████[/blue][cyan]╗[/cyan][blue]███████[/blue][cyan]╗[/cyan][blue]██[/blue][cyan]╗  [/cyan][blue]██[/blue][cyan]╗       │[/bold cyan]
-    │   [blue]██[/blue][cyan]╔══[/cyan][blue]██[/blue][cyan]╗╚══[/cyan][blue]███[/blue][cyan]╔╝[/cyan][blue]██[/blue][cyan]╔════╝[/cyan][blue]██[/blue][cyan]║  [/cyan][blue]██[/blue][cyan]║       │[/bold cyan]
-    │   [bold blue]███████[/bold blue][cyan]║  [/cyan][bold blue]███[/bold blue][cyan]╔╝ [/cyan][bold blue]███████[/bold blue][cyan]╗[/cyan][bold blue]███████[/bold blue][cyan]║       │[/bold cyan]
-    │   [blue]██[/blue][cyan]╔══[/cyan][blue]██[/blue][cyan]║ [/cyan][blue]███[/blue][cyan]╔╝  ╚════[/cyan][blue]██[/blue][cyan]║[/cyan][blue]██[/blue][cyan]╔══[/cyan][blue]██[/blue][cyan]║       │[/bold cyan]
-    │   [blue]██[/blue][cyan]║  [/cyan][blue]██[/blue][cyan]║[/cyan][blue]███████[/blue][cyan]╗[/cyan][blue]███████[/blue][cyan]║[/cyan][blue]██[/blue][cyan]║  [/cyan][blue]██[/blue][cyan]║       │[/bold cyan]
-    │   [dim]╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝[/dim]       │
+    │   {BLUE}█████╗ ███████╗███████╗██╗  ██╗{CYAN}       │
+    │   {BLUE}██╔══██╗╚══███╔╝██╔════╝██║  ██║{CYAN}       │
+    │   {BLUE}███████║  ███╔╝ ███████╗███████║{CYAN}       │
+    │   {BLUE}██╔══██║ ███╔╝  ╚════██║██╔══██║{CYAN}       │
+    │   {BLUE}██║  ██║███████╗███████║██║  ██║{CYAN}       │
+    │   {DIM}╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝{CYAN}       │
     │                                          │
-    │   [bold white]Azure Cloud Shell + AI[/bold white]     [dim]v0.1.0[/dim]   │
-    │   [dim]Powered by GitHub Copilot SDK[/dim]          │
+    │   {WHITE}Azure Cloud Shell + AI{CYAN}     {DIM}v0.1.0{CYAN}   │
+    │   {DIM}Powered by GitHub Copilot SDK{CYAN}          │
     │                                          │
-    ╰──────────────────────────────────────────╯[/bold cyan]"""
-    console.print(banner)
+    ╰──────────────────────────────────────────╯{RESET}
+    """)
 
     env = "Cloud Shell" if detect_cloud_shell() else "Local"
     console.print(f"[dim]Environment: {env}[/dim]")
