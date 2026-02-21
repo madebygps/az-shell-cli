@@ -29,12 +29,23 @@ def detect_cloud_shell() -> bool:
 
 
 async def on_pre_tool_use(input, invocation) -> dict:
-    """Safety hook that prompts the user before destructive commands."""
-    if input.get("toolName") == "run_command":
-        command = str(input.get("toolArgs", {}).get("command", input.get("input", {}).get("command", ""))).lower()
-        if any(kw in command for kw in DESTRUCTIVE_KEYWORDS):
+    """Safety hook that shows tool activity and prompts for destructive commands."""
+    tool_name = input.get("toolName", "unknown")
+    if tool_name == "run_command":
+        command = str(input.get("toolArgs", {}).get("command", input.get("input", {}).get("command", "")))
+        console.print(f"[dim]🔧 Running: {command}[/dim]")
+        if any(kw in command.lower() for kw in DESTRUCTIVE_KEYWORDS):
             return {"permissionDecision": "ask"}
+    else:
+        console.print(f"[dim]🔧 Calling: {tool_name}[/dim]")
     return {"permissionDecision": "allow"}
+
+
+async def on_post_tool_use(input, invocation) -> dict:
+    """Show when a tool call completes."""
+    tool_name = input.get("toolName", "unknown")
+    console.print(f"[dim]✓ {tool_name} done[/dim]")
+    return {}
 
 
 async def handle_user_input(request, invocation) -> dict:
@@ -69,6 +80,7 @@ async def create_agent():
             "system_message": {"content": system_prompt},
             "hooks": {
                 "on_pre_tool_use": on_pre_tool_use,
+                "on_post_tool_use": on_post_tool_use,
             },
             "on_user_input_request": handle_user_input,
         }

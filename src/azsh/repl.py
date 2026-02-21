@@ -72,6 +72,7 @@ async def run_repl():
 
             resolved_text = await resolve_mentions(user_input)
 
+            console.print("[dim]⏳ Thinking...[/dim]")
             try:
                 await session.send_and_wait({"prompt": resolved_text, "timeout": 300})
             except asyncio.TimeoutError:
