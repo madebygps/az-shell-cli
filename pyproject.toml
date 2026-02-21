@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "az-shell-cli"
+version = "0.1.0"
+description = "AI-powered Azure Cloud Shell assistant built with the GitHub Copilot SDK"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+dependencies = [
+    "github-copilot-sdk>=0.1.0",
+    "rich>=13.0.0",
+    "pydantic>=2.0.0",
+]
+
+[project.scripts]
+azsh = "azsh.main:main"
