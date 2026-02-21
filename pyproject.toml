@@ -17,3 +17,6 @@ dependencies = [
 
 [project.scripts]
 azsh = "azsh.main:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/azsh"]
