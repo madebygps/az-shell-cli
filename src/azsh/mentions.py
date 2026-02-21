@@ -8,6 +8,8 @@ from typing import Callable
 
 from rich.console import Console
 
+from azsh.resource_cache import get_active_rg, get_cached_resources
+
 console = Console()
 
 AZ_TIMEOUT = 10
@@ -166,6 +168,45 @@ def _resolve_file(match: re.Match) -> tuple[str, str]:
         return f"[Could not resolve @file:{path}: {e}]", f"@file:{path}"
 
 
+def _resolve_dynamic_resource(match: re.Match) -> tuple[str, str]:
+    """Resolve @prefix:name by looking up the resource in the cache."""
+    prefix = match.group(1)
+    name = match.group(2)
+    console.print(f"[dim]⟳ Resolving @{prefix}:{name}...[/dim]")
+
+    resources = get_cached_resources()
+    rg = get_active_rg()
+
+    # Find the resource by name in the cache
+    resource = None
+    for r in resources:
+        if r.get("name", "") == name:
+            resource = r
+            break
+
+    if not resource:
+        return (
+            f"[Could not resolve @{prefix}:{name}: resource not found in active RG '{rg}']",
+            f"@{prefix}:{name}",
+        )
+
+    resource_id = resource.get("id", "unknown")
+    rtype = resource.get("type", "unknown")
+    location = resource.get("location", "unknown")
+    tags = resource.get("tags") or {}
+    tags_str = ", ".join(f"{k}={v}" for k, v in tags.items()) if tags else "none"
+
+    context = (
+        f"[Azure Context: Resource '{name}']\n"
+        f"Type: {rtype}\n"
+        f"Resource Group: {rg}\n"
+        f"Location: {location}\n"
+        f"Resource ID: {resource_id}\n"
+        f"Tags: {tags_str}"
+    )
+    return context, f"resource '{name}'"
+
+
 # Ordered list of (pattern, resolver). Checked in order against user input.
 MENTION_PATTERNS: list[tuple[str, Callable]] = [
     (r"@sub\b", _resolve_sub),
@@ -173,6 +214,7 @@ MENTION_PATTERNS: list[tuple[str, Callable]] = [
     (r"@vm:(\S+)", _resolve_vm),
     (r"@aks:(\S+)", _resolve_aks),
     (r"@file:(\S+)", _resolve_file),
+    (r"@(\w+):(\S+)", _resolve_dynamic_resource),
 ]
 
 
